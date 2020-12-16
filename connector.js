@@ -59,7 +59,7 @@ class ServiceNowConnector {
   get(callback) {
     let getCallOptions = { ...this.options };
     getCallOptions.method = 'GET';
-    //getCallOptions.query = 'sysparm_limit=1';
+    getCallOptions.query = 'sysparm_limit=1';
     this.sendRequest(getCallOptions, (results, error) => callback(results, error));
   }
 
@@ -75,9 +75,9 @@ class ServiceNowConnector {
     * @return {string} ServiceNow URL
     */
   constructUri(serviceNowTable, query = null) {
-    let uri = `/api/now/table/${this.serviceNowTable}`;
-    if (this.query) {
-        uri = uri + '?' + this.query;
+    let uri = `/api/now/table/${serviceNowTable}`;
+    if (query) {
+        uri = uri + '?' + query;
     }
     return uri;
   }
@@ -93,9 +93,9 @@ class ServiceNowConnector {
  * @return {boolean} Returns true if instance is hibernating. Otherwise returns false.
  */
 isHibernating(response) {
-  return this.response.body.includes('Instance Hibernating page')
-  && this.response.body.includes('<html>')
-  && this.response.statusCode === 200;
+  return response.body.includes('Instance Hibernating page')
+  && response.body.includes('<html>')
+  && response.statusCode === 200;
 }
 
 
@@ -122,15 +122,15 @@ processRequestResults(error, response, body, callback) {
 
     if (error) {
       console.error('Error present.');
-      callbackError = this.error;
-    } else if (!this.validResponseRegex.test(this.response.statusCode)) {
+      callbackError = error;
+    } else if (!validResponseRegex.test(response.statusCode)) {
       console.error('Bad response code.');
-      callbackError = this.response;
-    } else if (isHibernating(this.response)) {
+      callbackError = response;
+    } else if (this.isHibernating(response)) {
       callbackError = 'Service Now instance is hibernating';
       console.error(callbackError);
     } else {
-      callbackData = this.response;
+      callbackData = response;
     }
     return callback(callbackData, callbackError);
 }
@@ -154,13 +154,13 @@ processRequestResults(error, response, body, callback) {
 sendRequest(callOptions, callback) {
   // Initialize return arguments for callback
   let uri;
-  if (this.callOptions.query)
-    uri = constructUri(this.callOptions.serviceNowTable, this.callOptions.query);
+  if (callOptions.query)
+    uri = this.constructUri(callOptions.serviceNowTable, callOptions.query);
   else
-    uri = constructUri(this.callOptions.serviceNowTable);
+    uri = this.constructUri(callOptions.serviceNowTable);
 
   const requestOptions = {
-    method: this.callOptions.method,
+    method: callOptions.method,
     auth: {
       user: this.options.username,
       pass: this.options.password,
@@ -169,25 +169,30 @@ sendRequest(callOptions, callback) {
     uri: uri,
   };
 
+  request(requestOptions, (error, response, body) => {
+    this.processRequestResults(error, response, body, (processedResults, processedError) => callback(processedResults, processedError));
+  });
+
 }
 
+
 /**
- * @memberof ServiceNowConnector
- * @method post
- * @description Call the ServiceNow POST API. Sets the API call's method,
- *   then calls sendRequest().
- *
- * @param {object} callOptions - Passed call options.
- * @param {string} callOptions.serviceNowTable - The table target of the ServiceNow table API.
- * @param {iapCallback} callback - Callback a function.
- * @param {(object|string)} callback.data - The API's response. Will be an object if sunnyday path.
- *   Will be HTML text if hibernating instance.
- * @param {error} callback.error - The error property of callback.
- */
-post(callOptions, callback) {
-  this.callOptions.method = 'POST';
-  sendRequest(this.callOptions, (results, error) => this.callback(results, error));
-}
+   * @memberof ServiceNowConnector
+   * @method post
+   * @description Call the ServiceNow POST API. Sets the API call's method,
+   *   then calls sendRequest().
+   *
+   * @param {iapCallback} callback - Callback a function.
+   * @param {(object|string)} callback.data - The API's response. Will be an object if sunnyday path.
+   *   Will be HTML text if hibernating instance.
+   * @param {error} callback.error - The error property of callback.
+   */
+  post(callback) {
+    let getCallOptions = { ...this.options };
+    getCallOptions.method = 'POST';
+    getCallOptions.query = 'sysparm_limit=1';
+    this.sendRequest(getCallOptions, (results, error) => callback(results, error));
+  }
 
 }
 

@@ -235,7 +235,7 @@ healthcheck(callback) {
 
             //let callbackData = JSON.stringify(bodyJSON);
 
-            callback(bodyJSON, error);
+            callback(bodyJSON.result, error);
 
             //log.warn(`DWOUT:${callbackData}`);
         }
@@ -279,7 +279,7 @@ healthcheck(callback) {
             this.renameKey(bodyJSON.result,'number','change_ticket_number');
             this.renameKey(bodyJSON.result,'sys_id','change_ticket_key');
         
-            callback(bodyJSON, error);
+            callback(bodyJSON.result, error);
         }
      });
      

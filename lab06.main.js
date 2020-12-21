@@ -208,41 +208,7 @@ healthcheck(callback) {
      * get() takes a callback function.
      */
 
-     this.connector.get((result, error) => {
-
-        //log.warn('Cheese Cheese Cheese');
-        
-        if(result.body)
-        {
-            let bodyJSON = JSON.parse(result.body)
-
-            var i;
-            
-            for (i in bodyJSON.result) 
-            {
-                Object.keys(bodyJSON.result[i]).forEach(function(key)
-                {
-                    if (['number','active','priority','description','work_start','work_end','sys_id'].indexOf(key) == -1)
-                    {
-                        delete bodyJSON.result[i][key];
-                    }
-                });
-
-                this.renameKey(bodyJSON.result[i],'number','change_ticket_number');
-                this.renameKey(bodyJSON.result[i],'sys_id','change_ticket_key');
-
-            }
-
-            //let callbackData = JSON.stringify(bodyJSON);
-
-            callback(bodyJSON, error);
-
-            //log.warn(`DWOUT:${callbackData}`);
-        }
-        
-        
-     }
-     );
+     this.connector.get(callback);
   }
 
   /**
@@ -261,34 +227,8 @@ healthcheck(callback) {
      * Note how the object was instantiated in the constructor().
      * post() takes a callback function.
      */
-     
-     this.connector.post((result, error) => {
 
-        if(result.body)
-        {
-            let bodyJSON = JSON.parse(result.body)
-
-            Object.keys(bodyJSON.result).forEach(function(key)
-            {
-                if (['number','active','priority','description','work_start','work_end','sys_id'].indexOf(key) == -1)
-                {
-                    delete bodyJSON.result[key];
-                }
-            });
-
-            this.renameKey(bodyJSON.result,'number','change_ticket_number');
-            this.renameKey(bodyJSON.result,'sys_id','change_ticket_key');
-        
-            callback(bodyJSON, error);
-        }
-     });
-     
-  }
-
-  renameKey ( obj, oldKey, newKey ) 
-  {
-    obj[newKey] = obj[oldKey];
-    delete obj[oldKey];
+     this.connector.post(callback);
   }
 }
 

@@ -132,7 +132,8 @@ processRequestResults(error, response, body, callback) {
     } else {
       callbackData = response;
     }
-    return callback(callbackData, callbackError);
+    
+    callback(callbackData, callbackError);
 }
 
 /**
